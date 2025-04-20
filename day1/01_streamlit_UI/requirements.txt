@@ -2,3 +2,8 @@ streamlit
 pandas
 numpy
 pyngrok
+transformers
+torch
+jiwer
+rouge-score
+sacrebleu

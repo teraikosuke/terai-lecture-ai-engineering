@@ -2,7 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
-
+from jiwer import wer
+from rouge_score import rouge_scorer
+import sacrebleu
 # ============================================
 # ページ設定
 # ============================================
@@ -179,6 +181,30 @@ st.write(f"こんにちは、{name}さん！")
 # """, unsafe_allow_html=True)
 # 
 # st.markdown('<p class="big-font">これはカスタムCSSでスタイリングされたテキストです！</p>', unsafe_allow_html=True)
+
+# --------------------------------------------
+# ここから評価指標セクションを追加しました。    
+# --------------------------------------------
+
+st.header("📊 要約の評価指標")
+
+# 正解文（リファレンス）と要約文を入力
+ref = st.text_area("▶ リファレンス（正解文）をここに貼ってください", height=100, key="ref")
+hyp = st.text_area("▶ システム要約文をここに貼ってください", height=100, key="hyp")
+
+if st.button("指標を計算", key="calc_metrics"):
+    # 指標を計算
+    wer_score  = wer(ref, hyp)
+    scorer     = rouge_scorer.RougeScorer(["rouge1", "rougeL"], use_stemmer=True)
+    rouge_res  = scorer.score(ref, hyp)
+    bleu_score = sacrebleu.sentence_bleu(hyp, [ref]).score
+
+    # メトリクスを並べて表示
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("WER",         f"{wer_score:.2f}")
+    col2.metric("ROUGE‑1 F1",   f"{rouge_res['rouge1'].fmeasure:.2f}")
+    col3.metric("ROUGE‑L F1",   f"{rouge_res['rougeL'].fmeasure:.2f}")
+    col4.metric("BLEU",        f"{bleu_score:.2f}")
 
 # ============================================
 # デモの使用方法
